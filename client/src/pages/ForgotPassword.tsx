@@ -15,7 +15,7 @@ export const ForgotPassword = () => {
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:3000/api/v1/auth/forgotpassword', { 
+      const response = await axios.post('http://localhost:3000/api/v1/auth/forgot-password', { 
         email: forgotPasswordData.email
       });
       alert(response.data.msg);

@@ -15,7 +15,6 @@ export declare const signupSchema: z.ZodObject<{
     password: string;
     cPassword: string;
 }>;
-export type SignupInput = z.infer<typeof signupSchema>;
 export declare const signinSchema: z.ZodObject<{
     email: z.ZodString;
     password: z.ZodString;
@@ -26,7 +25,6 @@ export declare const signinSchema: z.ZodObject<{
     email: string;
     password: string;
 }>;
-export type SigninInput = z.infer<typeof signinSchema>;
 export declare const forgotPasswordSchema: z.ZodObject<{
     email: z.ZodString;
 }, "strip", z.ZodTypeAny, {
@@ -34,7 +32,6 @@ export declare const forgotPasswordSchema: z.ZodObject<{
 }, {
     email: string;
 }>;
-export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export declare const resetPasswordSchema: z.ZodObject<{
     password: z.ZodString;
     cPassword: z.ZodString;
@@ -45,4 +42,7 @@ export declare const resetPasswordSchema: z.ZodObject<{
     password: string;
     cPassword: string;
 }>;
+export type SignupInput = z.infer<typeof signupSchema>;
+export type SigninInput = z.infer<typeof signinSchema>;
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

@@ -1,20 +1,19 @@
 import express from 'express';
-import authRoutes from './routes/auth';
+import authRouter from './routes/authRoutes';
 import cookieParser from "cookie-parser";
 import cors from 'cors';
-import compression from 'compression';
 
 const app = express();
 require("dotenv").config();
 
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: process.env.CLIENT_URL,
     credentials: true,
 }))
-app.use(compression());
 app.use(cookieParser());
 app.use(express.json());
-app.use('/api/v1/auth', authRoutes);
+
+app.use('/api/v1/auth', authRouter);
 
 
 app.listen(process.env.PORT, ()=>{

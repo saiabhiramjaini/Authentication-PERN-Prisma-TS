@@ -2,13 +2,11 @@ import { Request, Response } from "express"
 import { PrismaClient } from "@prisma/client"
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { forgotPasswordSchema, resetPasswordSchema, signinSchema, signupSchema } from "@abhiram2k03/input-validation";
+import { forgotPasswordSchema, resetPasswordSchema, signinSchema, signupSchema } from "../schema";
 import { sendEmail } from "../utils/email"
 import { AuthenticatedRequest } from "../utils/types";
 
 const prisma = new PrismaClient();
-
-const User = prisma.user;
 
 export const signup = async (req: Request, res: Response)=>{
     try{
@@ -18,7 +16,7 @@ export const signup = async (req: Request, res: Response)=>{
             return res.json({ msg: "Passwords do not match" });
         }
 
-        const user = await User.findFirst({ 
+        const user = await prisma.user.findFirst({ 
             where: {
                 email
             }
@@ -28,7 +26,7 @@ export const signup = async (req: Request, res: Response)=>{
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const saveUser = await User.create({
+        const saveUser = await prisma.user.create({
             data:{
                 username,
                 email,
@@ -42,14 +40,11 @@ export const signup = async (req: Request, res: Response)=>{
         return res.json({msg: "User created Successfully"})
     }
     catch (error: any) {
-        // If validation fails, return error message
         if (error.errors && error.errors[0].message) {
           const message = error.errors[0].message;
           return res.json({ msg: message });
         }
-      
-        // For any other errors, print "Internal Server Error"
-        console.error(error); // Log the error for debugging purposes
+        console.error(error); 
         return res.json({ msg: "Internal Server Error" });
     }
 }
@@ -58,7 +53,7 @@ export const signin = async (req: Request, res: Response)=>{
     try{
         const {email, password} = signinSchema.parse(req.body);
 
-        const user = await User.findFirst({ 
+        const user = await prisma.user.findFirst({ 
             where: {
                 email
             }
@@ -78,14 +73,11 @@ export const signin = async (req: Request, res: Response)=>{
         return res.json({msg: "Signin successful"})
     }
     catch (error: any) {
-        // If validation fails, return error message
         if (error.errors && error.errors[0].message) {
           const message = error.errors[0].message;
           return res.json({ msg: message });
         }
-      
-        // For any other errors, print "Internal Server Error"
-        console.error(error); // Log the error for debugging purposes
+        console.error(error);
         return res.json({ msg: "Internal Server Error" });
     }
 }
@@ -95,7 +87,7 @@ export const forgotPassword = async(req: Request, res:Response)=>{
     try{
         const {email} = forgotPasswordSchema.parse(req.body);
 
-        const existingUser = await User.findFirst({
+        const existingUser = await prisma.user.findFirst({
             where:{
                 email
             }
@@ -105,14 +97,12 @@ export const forgotPassword = async(req: Request, res:Response)=>{
             return res.json({msg: "User not found"})
         }
 
-
-        // Generate token
         const token = jwt.sign({ userId: existingUser.id }, process.env.JWT_SECRET!, { expiresIn: "1d" });
         res.cookie('token', token, { httpOnly: true });
-        const text = `'http://localhost:5173/resetPassword/${token}`;
+
+        const text = `${process.env.CLIENT_URL}/resetPassword/${token}`;
         const emailResult = await sendEmail(email, "Reset password", text);
 
-        // Send email
         if (emailResult.success) {
             return res.json({ msg: "Email sent successfully" });
         } else {
@@ -120,14 +110,12 @@ export const forgotPassword = async(req: Request, res:Response)=>{
         }
     }
     catch (error: any) {
-        // If validation fails, return error message
         if (error.errors && error.errors[0].message) {
           const message = error.errors[0].message;
           return res.json({ msg: message });
         }
       
-        // For any other errors, print "Internal Server Error"
-        console.error(error); // Log the error for debugging purposes
+        console.error(error); 
         return res.json({ msg: "Internal Server Error" });
     }
 }
@@ -145,50 +133,11 @@ export const profile = async (req: AuthenticatedRequest, res: Response) => {
     }
 };
 
-// export const resetPassword = async(req:AuthenticatedRequest, res:Response)=>{
-//     try{
-//         const { password, cPassword} = resetPasswordSchema.parse(req.body);
-//         const user = req.user;
-
-//         if (!user) {
-//             return res.status(401).json({ msg: 'Unauthorized' });
-//         }
-
-//         if (password !== cPassword) {
-//             return res.json({ msg: "Passwords do not match" });
-//         }
-        
-//         // Hash the password
-//         const hashedPassword = await bcrypt.hash(password, 10);
-
-//         // Update the user's password in the database
-//         await User.update({
-//             where: { id: user.id },
-//             data: { password: hashedPassword },
-//         });
-
-//         return res.json({msg: "password updated"});
-//     }
-//     catch (error: any) {
-//         // If validation fails, return error message
-//         if (error.errors && error.errors[0].message) {
-//           const message = error.errors[0].message;
-//           return res.json({ msg: message });
-//         }
-      
-//         // For any other errors, print "Internal Server Error"
-//         console.error(error); // Log the error for debugging purposes
-//         return res.json({ msg: "Internal Server Error" });
-//     }
-// }
-
 
 export const resetPassword = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { password, cPassword } = resetPasswordSchema.parse(req.body);
     const user = req.user;
-
-    console.log('User object before update:', user); // Log the user object
 
     if (!user) {
       return res.status(401).json({ msg: 'Unauthorized' });
@@ -198,35 +147,24 @@ export const resetPassword = async (req: AuthenticatedRequest, res: Response) =>
       return res.json({ msg: "Passwords do not match" });
     }
 
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log('Hashed password:', hashedPassword); // Log the hashed password
 
-    // Update the user's password in the database
-    await User.update({ where: { id: user.id }, data: { password: hashedPassword } });
-
-    // Fetch the updated user object
-    const updatedUser = await User.findUnique({ where: { id: user.id } });
-    console.log('Updated user object:', updatedUser); // Log the updated user object
+    await prisma.user.update({ where: { id: user.id }, data: { password: hashedPassword } });
+    const updatedUser = await prisma.user.findUnique({ where: { id: user.id } });
 
     return res.json({ msg: 'Password updated successfully', user: updatedUser });
   } catch (error: any) {
-    // If validation fails, return error message
     if (error.errors && error.errors[0].message) {
       const message = error.errors[0].message;
       return res.json({ msg: message });
     }
-
-    // For any other errors, print "Internal Server Error"
-    console.error(error); // Log the error for debugging purposes
+    console.error(error);
     return res.json({ msg: "Internal Server Error" });
   }
 };
 
 
-
 export const logout = async(req: Request, res: Response)=>{
-    // Clear token cookie
     res.clearCookie('token');
     return res.json({ msg: "Logged out successfully" });
 }

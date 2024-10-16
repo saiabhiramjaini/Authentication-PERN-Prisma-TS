@@ -20,7 +20,7 @@ export const ResetPassword = () => {
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:3000/api/v1/auth/resetpassword/:token', {
+      const response = await axios.post('http://localhost:3000/api/v1/auth/reset-password/:token', {
         password: resetPasswordData.password,
         cPassword: resetPasswordData.cPassword,
       });

@@ -20,9 +20,8 @@ export const authMiddleware = async (req: AuthenticatedRequest, res: Response, n
       return res.status(401).json({ msg: 'Invalid token, user not found' });
     }
 
-    // Attach the user object to the request for further use
     req.user = user;
-    // Call next middleware
+    
     next();
   } catch (error) {
     console.error('Authentication error:', error);
