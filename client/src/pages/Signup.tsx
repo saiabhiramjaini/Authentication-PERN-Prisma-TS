@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { Button } from "../components/Button";
 import { Heading } from "../components/Heading";
 import { InputBox } from "../components/InputBox";
 import { SubHeading } from "../components/SubHeading";
@@ -7,14 +6,15 @@ import { TextLink } from "../components/TextLink";
 import { useState } from "react";
 import axios from "axios";
 import { SignupInput } from "@abhiram2k03/input-validation";
+import { Button } from "@/components/ui/button";
 
 export const Signup = () => {
   const [signupData, setSignupData] = useState<SignupInput>({
     username: "",
     email: "",
     password: "",
-    cPassword: ""
-  })
+    cPassword: "",
+  });
   const navigate = useNavigate();
 
   axios.defaults.withCredentials = true;
@@ -23,16 +23,18 @@ export const Signup = () => {
     e.preventDefault();
     try {
       console.log(signupData);
-      const response = await axios.post('http://localhost:3000/api/v1/auth/signup', { 
-        
-        username: signupData.username,
-        email: signupData.email,
-        password: signupData.password,
-        cPassword: signupData.cPassword
-       });
+      const response = await axios.post(
+        "http://localhost:3000/api/v1/auth/signup",
+        {
+          username: signupData.username,
+          email: signupData.email,
+          password: signupData.password,
+          cPassword: signupData.cPassword,
+        }
+      );
       alert(response.data.msg);
       if (response.data.msg === "User created Successfully") {
-        navigate('/signin');
+        navigate("/signin");
       }
     } catch (e) {
       console.log(e);
@@ -51,8 +53,8 @@ export const Signup = () => {
           onChange={(e) => {
             setSignupData({
               ...signupData,
-              username: e.target.value
-            })
+              username: e.target.value,
+            });
           }}
         />
         <InputBox
@@ -62,8 +64,8 @@ export const Signup = () => {
           onChange={(e) => {
             setSignupData({
               ...signupData,
-              email: e.target.value
-            })
+              email: e.target.value,
+            });
           }}
         />
         <InputBox
@@ -73,8 +75,8 @@ export const Signup = () => {
           onChange={(e) => {
             setSignupData({
               ...signupData,
-              password: e.target.value
-            })
+              password: e.target.value,
+            });
           }}
         />
         <InputBox
@@ -84,11 +86,12 @@ export const Signup = () => {
           onChange={(e) => {
             setSignupData({
               ...signupData,
-              cPassword: e.target.value
-            })
+              cPassword: e.target.value,
+            });
           }}
         />
-        <Button text="Submit" onClick={handleSubmit} />
+
+        <Button>Click me</Button>
         <div className="flex justify-end">
           <TextLink text="Already have an account?" linkTo="/signin" />
         </div>
